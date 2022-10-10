@@ -37,8 +37,7 @@ start_time = time()
 if os.path.exists(args.model_output_path) is False:
     os.mkdir(args.model_output_path)
 if args.model_nick_name is None:
-    setattr(args, "model_nick_name", f"OPT:{args.optimizer}-E:{args.epochs}-H:
-{args.hidden_size}-S:{args.scale_factor}")
+    setattr(args, "model_nick_name", f"OPT:{args.optimizer}-E:{args.epochs}-H:{args.hidden_size}-S:{args.scale_factor}")
 '''
 1. Load the dataset
 Please do not change this code block
@@ -99,13 +98,17 @@ if args.is_pic_vis:
 '''
 num_labels = 10
 model = Sequential()
+
+
 ###########################MAGIC HAPPENS HERE##########################
 # Build up a neural network to achieve better performance.
 # Hint: Deeper networks (i.e., more hidden layers) and a different activation 
-function may achieve better results.
+# function may achieve better results.
 model.add(Flatten())
 model.add(Dense(args.hidden_size, activation="relu")) # first layer
 ###########################MAGIC ENDS HERE##########################
+
+
 model.add(Dense(num_labels)) # last layer
 # Compile Model
 model.compile(optimizer=args.optimizer,
@@ -121,8 +124,7 @@ print(history.history)
 test_loss, test_acc = model.evaluate(x_test,  y_test, verbose=2)
 print("\nTest Accuracy: ", test_acc)
 end_time = time()
-assert end_time - start_time < MAXIMIZED_RUNNINGTIME, "YOU HAVE EXCEED THE TIME 
-LIMIT, PLEASE CONSIDER USE SMALLER EPOCHS and SHAWLLOW LAYERS"
+assert end_time - start_time < MAXIMIZED_RUNNINGTIME, "YOU HAVE EXCEED THE TIME LIMIT, PLEASE CONSIDER USE SMALLER EPOCHS and SHAWLLOW LAYERS"
 # save the model
 model.save(args.model_output_path + "/" + args.model_nick_name)
 '''
@@ -132,10 +134,14 @@ y_test_predict = np.argmax(model.predict(x_test), axis=1)
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score, recall_score
 import matplotlib.pyplot as plt
+
+
 ###########################MAGIC HAPPENS HERE##########################
 # Visualize the confusion matrix by matplotlib and sklearn based on y_test_predict 
-and y_test
+# and y_test
 # Report the precision and recall for 10 different classes
 # Hint: check the precision and recall functions from sklearn package or you can 
-implement these function by yourselves.
+# implement these function by yourselves.
 ###########################MAGIC ENDS HERE##########################
+
+
