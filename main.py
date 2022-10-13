@@ -1,3 +1,4 @@
+import sys
 from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
@@ -8,6 +9,9 @@ from time import time
 import os
 import random
 from sklearn.model_selection import train_test_split
+import ssl
+from PIL import Image
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def main():
@@ -24,10 +28,10 @@ def main():
     # Hint: Advanced optimizer will achieve better performance.
     # Hint: Large Epochs will achieve better performance.
     # Hint: Large Hidden Size will achieve better performance.
-    parser.add_argument("--optimizer", default='sgd', type=str)
-    parser.add_argument("--epochs", default=10, type=int)
-    parser.add_argument("--hidden_size", default=32, type=int)
-    parser.add_argument("--scale_factor", default=10, type=float)
+    parser.add_argument("--optimizer", default='adam', type=str)
+    parser.add_argument("--epochs", default=50, type=int)
+    parser.add_argument("--hidden_size", default=50, type=int)
+    parser.add_argument("--scale_factor", default=100, type=float)
     ###########################MAGIC ENDS HERE##########################
     parser.add_argument("--is_pic_vis", action="store_true")
     parser.add_argument("--model_output_path", type=str, default="./output")
@@ -41,7 +45,7 @@ def main():
         os.mkdir(args.model_output_path)
     if args.model_nick_name is None:
         setattr(args, "model_nick_name",
-                f"OPT:{args.optimizer}-E:{args.epochs}-H:{args.hidden_size}-S:{args.scale_factor}")
+                f"OPT-{args.optimizer}-E-{args.epochs}-H-{args.hidden_size}-S-{args.scale_factor}")
     '''
     1. Load the dataset
     Please do not change this code block
@@ -109,12 +113,20 @@ def main():
     # function may achieve better results.
     model.add(Flatten())
     model.add(Dense(args.hidden_size, activation="relu"))  # first layer
+    model.add(Dense(args.hidden_size, activation="selu"))
+    model.add(Dense(args.hidden_size, activation="selu"))
+    model.add(Dense(args.hidden_size, activation="relu"))  # Our test layer
+    model.add(Dense(args.hidden_size, activation="tanh"))  # Our test layer
+    model.add(Dense(args.hidden_size, activation="selu"))  # Our test layer
+    # model.add(Dense(args.hidden_size, activation="selu"))  # Our test layer
+
     ###########################MAGIC ENDS HERE##########################
 
     model.add(Dense(num_labels))  # last layer
     # Compile Model
     model.compile(optimizer=args.optimizer,
-                  loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  loss=keras.losses.SparseCategoricalCrossentropy(
+                      from_logits=True),
                   metrics=['accuracy'])
     # Train Model
     history = model.fit(x_train, y_train,
@@ -127,6 +139,8 @@ def main():
     print("\nTest Accuracy: ", test_acc)
     end_time = time()
     assert end_time - start_time < MAXIMIZED_RUNNINGTIME, "YOU HAVE EXCEED THE TIME LIMIT, PLEASE CONSIDER USE SMALLER EPOCHS and SHAWLLOW LAYERS"
+    # if (end_time-start_time) < MAXIMIZED_RUNNINGTIME:
+    #    print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa too LONG")
     # save the model
     model.save(args.model_output_path + "/" + args.model_nick_name)
     '''
@@ -143,6 +157,50 @@ def main():
     # Report the precision and recall for 10 different classes
     # Hint: check the precision and recall functions from sklearn package or you can
     # implement these function by yourselves.
+    class_names_array = ["airplane", "automobile", "bird",
+                         "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+    class_names_array_short = ["plane", "auto", "bird",
+                               "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+    # for i in y_test_predict:
+    #    print(i, end=' '),
+
+    c_mat = confusion_matrix(y_test, y_test_predict)
+
+    print("cmat: ")
+    print(c_mat)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(c_mat)
+
+    # create text annotations
+    for i in range(10):
+        for j in range(10):
+            text = ax.text(j, i, c_mat[i, j],
+                           ha="center", va="center", color="w")
+
+    ax.set_xticks(np.arange(len(class_names_array_short)),
+                  labels=class_names_array_short)
+    ax.set_yticks(np.arange(len(class_names_array)), labels=class_names_array)
+
+    plt.xlabel("Guesses")
+    plt.ylabel("True")
+
+    ax.set_title("Heat Map of NN Test Results")
+    fig.tight_layout()
+    plt.show()
+
+    #plt.imshow(c_mat, cmap='hot', interpolation='nearest')
+
+    # for i in range(10):
+    #    for j in range(10):
+    #        text = plt.text(j, i, c_mat[i,j], ha="center", va="center", color="w")
+
+    #plt.set_title("Heat Map of NN Test Results")
+    # plt.show()
+    pscore = precision_score(y_test, y_test_predict, average=None)
+    rscore = recall_score(y_test, y_test_predict, average=None)
+    print("Precision_score: " + str(pscore))
+    print("Recall score: " + str(rscore))
     ###########################MAGIC ENDS HERE##########################
 
 
